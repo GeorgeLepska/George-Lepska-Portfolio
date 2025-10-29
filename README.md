@@ -19,9 +19,9 @@ Results: Although the mean word search scores exhibited a trend to be higher amo
 
 Link to Paper: [The Effect of Jumpscares on Word Search Performance.pdf](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/QAC307%20Final%20Paper%20Lepska.pdf)
 
-# Maze Game Project
+# Choose Your Own Adventure Mini Game
 
-Code: [Maze Game Project.py](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Final_Project_GL.py)
+Code: [Choose Your Own Adventure Mini Game.py](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Final_Project_GL.py)
 
 Description: For this project, I created a choose your ownadventure style game, where the player enters a room and either getss an item, has to defeat a monster or solves a riddle. Items increase health and strength, monsters affect health and strength, and the player has to solve the riddle to maze it to the next room. The player wins if they make it to the end of the maze without depleting their health stat
 
