@@ -13,7 +13,7 @@ Description: For this project, I tested 30 of my peers to test if getting jumpsc
 
 Methods: For the project, subjects were randomly assigned to three types of IVs: jumpscare with audio (JA), jumpscare no audio (JNA), and no jumpscare (NJ) and contained two covariates: Biologocial Sex (M or F) and Underclassmen (Y or N). For the procedures: The study used the [Oceans Animals Word Search](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Screenshot%202025-10-29%20at%2012.58.59%20PM.png) and [The Scary Maze Game](https://www.silvergames.com/en/scary-maze). A physical copy of the word search was printed for the subject, and was placed faced down. If the subject was assigned NJ, then they were instruct4ed to complete the word search in 60 seconds. If the subject was assigned JA or NJA, they were instructed to play the game, flip the piece of paper over once the game was completed, and then complete the word search in 60 seconds. The data collection for the project can be seen here: [Data Collection.csv](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/QAC%20Final%20Proj%20Data%20-%20Sheet1.csv)
 
-Skills and Technology: The project was done in R, and used ggplot for data visualization and analysis and dplyr for data manipulation
+Skills and Technology: The project was done in R, and used ggplot for data visualization and analysis and dplyr for data manipulation.
 
 Results: Although the mean word search scores exhibited a trend to be higher among the groups with jumpscares, the results failed to achieve statistical significance.
 
@@ -23,8 +23,8 @@ Link to Paper: [The Effect of Jumpscares on Word Search Performance.pdf](https:/
 
 Code: [Choose Your Own Adventure Mini Game.py](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Final_Project_GL.py)
 
-Description: For this project, I created a choose your ownadventure style game, where the player enters a room and either getss an item, has to defeat a monster or solves a riddle. Items increase health and strength, monsters affect health and strength, and the player has to solve the riddle to maze it to the next room. The player wins if they make it to the end of the maze without depleting their health stat
+Description: For this project, I created a choose your ownadventure style game, where the player enters a room and either getss an item, has to defeat a monster or solves a riddle. Items increase health and strength, monsters affect health and strength, and the player has to solve the riddle to maze it to the next room. The player wins if they make it to the end of the maze without depleting their health stat.
 
-Skills and Technology: The porject uses flow control (If, While and For loops) for the game's progress, dictionaries to store player stats, and lists to display scenarios player went through
+Skills and Technology: The project uses flow control (If, While and For loops) for the game's progress, dictionaries to store player stats, and lists to display scenarios player went through.
 
 
