@@ -11,7 +11,7 @@ Code: [Jumpscarfe Word Search Project.R](https://github.com/GeorgeLepska/George-
 
 Description: For this project, I tested 30 of my peers to see if getting jumpscared increases the amount of words found on a wordsearch. 
 
-Methods: The project uses three types of IVs: jumpscare with audio, jumpscare no audio, and no jumpscare and two covariates: Biologocial Sex (M or F) and Underclassmen (Yes or No). For the procedures: The study used the Oceans Animals Word Search and The Scary Maze Game.  
+Methods: The project uses three types of IVs: jumpscare with audio, jumpscare no audio, and no jumpscare and two covariates: Biologocial Sex (M or F) and Underclassmen (Yes or No). For the procedures: The study used the Oceans Animals Word Search and The Scary Maze Game. A physical copy of the word search was printed for the subject, and it was plased faced down. If the subject was assigned JA or NJA, they were instructed to play the game, and then flip the piece of paper over once the game was completed.
 
 [Data Collection](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/QAC%20Final%20Proj%20Data%20-%20Sheet1.csv)
 
