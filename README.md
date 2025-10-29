@@ -11,11 +11,11 @@ Code: [Jumpscarfe Word Search Project.R](https://github.com/GeorgeLepska/George-
 
 Description: For this project, I tested 30 of my peers to test if getting jumpscared increases the amount of words found on a wordsearch. 
 
-Methods: The project uses three types of IVs: jumpscare with audio (JA), jumpscare no audio (JNA), and no jumpscare (NJ) and two covariates: Biologocial Sex (M or F) and Underclassmen (Y or N). For the procedures: The study used the Oceans Animals Word Search and [The Scary Maze Game](https://www.silvergames.com/en/scary-maze). A physical copy of the word search was printed for the subject, and it was plased faced down. If the subject was assigned NJ, then they were instruct4ed to complete the word search in 60 seconds. If the subject was assigned JA or NJA, they were instructed to play the game, flip the piece of paper over once the game was completed, and then complete the word search in 60 seconds. The data collection can be seen here: [Data Collection](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/QAC%20Final%20Proj%20Data%20-%20Sheet1.csv)
+Methods: For the project, subjects were randomly assigned to three types of IVs: jumpscare with audio (JA), jumpscare no audio (JNA), and no jumpscare (NJ) and contained two covariates: Biologocial Sex (M or F) and Underclassmen (Y or N). For the procedures: The study used the [Oceans Animals Word Search](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Screenshot%202025-10-29%20at%2012.58.59%20PM.png) and [The Scary Maze Game](https://www.silvergames.com/en/scary-maze). A physical copy of the word search was printed for the subject, and was placed faced down. If the subject was assigned NJ, then they were instruct4ed to complete the word search in 60 seconds. If the subject was assigned JA or NJA, they were instructed to play the game, flip the piece of paper over once the game was completed, and then complete the word search in 60 seconds. The data collection for the project can be seen here: [Data Collection.csv](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/QAC%20Final%20Proj%20Data%20-%20Sheet1.csv)
 
-Skills and Technology:
+Skills and Technology: The project was done in R, and used ggplot for data visualization and analysis and dplyr for data manipulation
 
-Results: 
+Results: Although the mean word search scores exhibited a trend to be higher among the groups with jumpscares, the results failed to achieve statistical significance.
 
 Link to Paper:
 
