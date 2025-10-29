@@ -1,7 +1,7 @@
 ## GEORGE_LEPSKA_PORTFOLIO
 
 # ABOUT
-My name is George Lepska. I graduated from Wesleyan University in May opf 2025. During my time at Wesleyan, I majored in Economics and minored in data analysis and art history. Throughout my time at Wesleyan, I grew a strong analuysitcal background and developed a passion for data analysis. I am excited to bring my skills to the field of data analysis as an entry-level business analyst.
+My name is George Lepska. I graduated from Wesleyan University in May opf 2025. During my time at Wesleyan, I majored in Economics and minored in data analysis and art history. At Wesleyan, I grew a strong analytical background and developed a passion for data analysis. I am excited to bring my skills to the field of data analysis as an entry-level business analyst.
 
 # PROJECTS:
 
@@ -17,7 +17,7 @@ Skills and Technology: The project was done in R, and used ggplot for data visua
 
 Results: Although the mean word search scores exhibited a trend to be higher among the groups with jumpscares, the results failed to achieve statistical significance.
 
-Link to Paper:
+Link to Paper: [The Effect of Jumpscares on Word Search Performance.pdf](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/QAC307%20Final%20Paper%20Lepska.pdf)
 
 # Maze Game Project
 
