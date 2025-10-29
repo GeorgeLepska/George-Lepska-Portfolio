@@ -7,7 +7,7 @@ My name is George Lepska. I graduated from Wesleyan University in May opf 2025. 
 
 # The Effect of Jumpscares on Word Search Performance
 
-Code:
+Code: [Jumpscarfe Word Search Project.R](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Final%20Proj%20Lepska.R)
 
 Goal: 
 
