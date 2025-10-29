@@ -9,9 +9,7 @@ My name is George Lepska. I graduated from Wesleyan University in May opf 2025. 
 
 Code: [Jumpscarfe Word Search Project.R](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Final%20Proj%20Lepska.R)
 
-Goal: 
-
-Description: For this project, I tested 30 of my peerrs to see if getting jumpscared increases the amount of words found on a wordsearch. The porject uses three types of IVs: jumpscare with audio, jumpscare no audio, and no jumpscare. The skills used for this project is ggplot and dplyr. 
+Description: For this project, I tested 30 of my peers to see if getting jumpscared increases the amount of words found on a wordsearch. The project uses three types of IVs: jumpscare with audio, jumpscare no audio, and no jumpscare and two covariates: Biologocial Sex (M or F) and Underclassmen (Yes or No). For the procedures: The study used the Oceans Animals Word Search and The Scary Maze Game.  
 
 [Data Collection](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/QAC%20Final%20Proj%20Data%20-%20Sheet1.csv)
 
