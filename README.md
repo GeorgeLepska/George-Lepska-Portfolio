@@ -21,15 +21,10 @@ Link to Paper: [The Effect of Jumpscares on Word Search Performance.pdf](https:/
 
 # Maze Game Project
 
-Code:
+Code: [Maze Game Project.py](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Final_Project_GL.py)
 
-Description:
+Description: For this project, I created a choose your ownadventure style game, where the player enters a room and either getss an item, has to defeat a monster or solves a riddle. Items increase health and strength, monsters affect health and strength, and the player has to solve the riddle to maze it to the next room. The player wins if they make it to the end of the maze without depleting their health stat
 
-Skills and Technology:
-
-
-The first project in my portfolio is my maze game. It is my choose your own adventure style game. The project uses Python and features skills suxh as While loops, IF statements. 
+Skills and Technology: The porject uses flow control (If, While and For loops) for the game's progress, dictionaries to store player stats, and lists to display scenarios player went through
 
 
-
-SKILLS: R, Python, Stata, SQL, 
