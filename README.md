@@ -1,7 +1,7 @@
 ## GEORGE_LEPSKA_PORTFOLIO
 
 # ABOUT:
-My name is George Lepska. I graduated from Wesleyan University in May of 2025. During my time at Wesleyan, I majored in Economics and minored in data analysis and art history. At Wesleyan, I grew a strong analytical background and developed a passion for data analysis. I am excited to bring my skills to the field of data analysis as an entry-level business analyst.
+My name is George Lepska. I graduated from Wesleyan University in May of 2025. During my time at Wesleyan, I majored in Economics and minored in data analysis and art history. At Wesleyan, I grew a strong analytical background and developed a passion for data analysis. I am excited to bring my skills to the field as a business analyst.
 
 # PROJECTS:
 
@@ -15,7 +15,7 @@ Methods: For the project, subjects were randomly assigned to three types of IVs:
 
 Skills and Technology: The project was done in R, and used ggplot for data visualization and analysis and dplyr for data manipulation.
 
-Results: Although the mean word search scores exhibited a trend to be higher among the groups with jumpscares, the results failed to achieve statistical significance.
+Results: Although the mean word search scores exhibited a trend to be higher among the groups with jumpscares, the results failed to reach statistical significance.
 
 Link to Paper: [The Effect of Jumpscares on Word Search Performance.pdf](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/QAC307%20Final%20Paper%20Lepska.pdf)
 
@@ -23,7 +23,7 @@ Link to Paper: [The Effect of Jumpscares on Word Search Performance.pdf](https:/
 
 Code: [Choose Your Own Adventure Mini Game.py](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Final_Project_GL.py)
 
-Description: For this project, I created a choose your own adventure style game, where the player enters a room and either getss an item, has to defeat a monster or solves a riddle. Items increase health and strength, monsters affect health and strength, and the player has to solve the riddle to maze it to the next room. The player wins if they make it to the end of the maze without depleting their health stat.
+Description: For this project, I created a choose your own adventure style game, where the player enters a room and either gets an item, has to defeat a monster, or solves a riddle. Items increase health and strength, monsters affect health and strength, and the player has to solve the riddle to maze it to the next room. The player wins if they make it to the end of the maze without depleting their health stat.
 
 Skills and Technology: The project uses flow control (If, While and For loops) for the game's progress, dictionaries to store player stats, and lists to display scenarios player went through.
 
