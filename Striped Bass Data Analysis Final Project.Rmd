@@ -1,0 +1,1261 @@
+---
+title: "Striped Bass Project"
+output: html_document
+date: "2025-11-21"
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+Striper_clean <- read_excel("/Users/georgelepska/Desktop/Data Analysis Docs/STRIPED BASS DATA.xlsx")
+
+install.packages("lubridate")
+install.packages("randomForest")
+install.packages("tidyr")
+install.packages("ggplot2")
+install.packages("readxl")
+install.packages("car")
+install.packages("caret")
+install.packages("pROC")
+install.packages("broom")
+install.packages("glmnet")
+install.packages("MASS")
+
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(randomForest)
+library(tidyr)
+library(mgcv)
+library(car)
+library(glmnet)
+library(caret)     
+library(pROC)       
+library(broom) 
+library(MASS)
+
+#New Variables:
+
+Striper_clean$date <- ymd(Striper_clean$date)
+Striper_clean$year <- year(Striper_clean$date)
+
+#method_grouped
+Striper_clean <- Striper_clean %>%
+  mutate(
+    method_grouped = case_when(
+      method == "casting" ~ "casting",           
+      method == "trolling" ~ "trolling",         
+      method %in% c("free line", "surfcasting", "bottom fishing", "jigging") ~ "other",  
+      TRUE ~ "other"
+    ),
+    # Reorder factor levels so "other" appears last
+    method_grouped = factor(method_grouped, 
+                           levels = c("casting", "trolling", "other"))
+  )
+#time_period
+Striper_clean <- Striper_clean %>%
+  mutate(
+    time_hour = hour(time) + minute(time) / 60
+  )
+
+Striper_clean <- Striper_clean %>%
+  mutate(
+    time_period = case_when(
+    time_hour >= 5 & time_hour < 10 ~ "dawn",
+    time_hour >= 10 & time_hour < 16 ~ "midday",
+    time_hour >= 16 & time_hour < 21 ~ "dusk",
+    time_hour >= 21 | time_hour < 5 ~ "night",
+    TRUE ~ NA_character_
+  ),
+  time_period = factor(time_period)
+)
+#Season
+Striper_clean <- Striper_clean %>%
+  mutate(
+    neutral_date = as.Date(sprintf(
+      "2000-%02d-%02d",
+      month(date),
+      day(date)
+    ))
+  )
+
+Striper_clean <- Striper_clean %>%
+  mutate(
+    season = case_when(
+      month(date) %in% c(12, 1, 2) ~ "Winter",
+      month(date) %in% c(3, 4, 5)  ~ "Spring",
+      month(date) %in% c(6, 7, 8)  ~ "Summer",
+      month(date) %in% c(9, 10, 11) ~ "Fall"
+    )
+  )
+
+Striper_clean <- Striper_clean %>%
+  mutate(
+    doy = yday(date)
+  )
+#Wind Speed
+Striper_clean <- Striper_clean %>%
+  mutate(
+    wind_direction = factor(
+      wind_direction,
+      levels = c("N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+                 "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW")
+    )
+  )
+#Wind Cardinal
+Striper_clean <- Striper_clean %>%
+  mutate(
+    wind_cardinal = if_else(
+      is.na(wind_direction),
+      NA_character_,
+      substr(toupper(trimws(wind_direction)), 1, 1)
+    )
+  )
+Striper_clean <- Striper_clean %>%
+  mutate(
+    wind_cardinal = if_else(
+      is.na(wind_direction),
+      NA_character_,
+      substr(toupper(trimws(wind_direction)), 1, 1)
+    )
+  )
+
+Striper_clean <- Striper_clean %>%
+  mutate(
+    wind_cardinal = factor(
+      wind_cardinal,
+      levels = c("N", "E", "S", "W")
+    )
+  )
+
+#Weather Grouped
+Striper_clean <- Striper_clean %>%
+  mutate(
+    weather_grouped = case_when(
+      weather %in% c("rain", "light rain") ~ "rainy",           
+      weather == "overcast" ~ "overcast",         
+      weather %in% c("partly cloudy", "sunny") ~ "clear",  
+      TRUE ~ NA_character_
+    ),
+    weather_grouped = factor(weather_grouped)
+  )
+#Mood Phase Editing
+Striper_clean <- Striper_clean %>%
+  mutate(
+    moon_phase = factor(
+      moon_phase,
+      levels = c("new moon", "waxing cresent", "first quarter", "waxing gibbous",
+                 "full moon", "waning gibbous", "last quarter", "waning cresent")
+    )
+  )
+
+Striper_clean <- Striper_clean %>%
+  mutate(
+    moon_numeric = as.numeric(moon_phase)
+  )
+
+
+
+```
+
+# Graphs of weight and length by season
+summary(Striper_clean$length)
+# Calculate the 75th percentile
+percentile_75 <- quantile(Striper_clean$length, 0.75, na.rm = TRUE)
+
+# Create a new column to categorize values
+Striper_clean$color_group <- ifelse(Striper_clean$length >= percentile_75, 
+                                     "75th percentile+", "Below 75th percentile")
+
+Striper_Histogram <- ggplot(Striper_clean, aes(x = length, fill = color_group)) +
+  geom_histogram(bins = 30, color = "white") +
+  scale_fill_manual(values = c("Below 75th percentile" = "steelblue", 
+                                "75th percentile+" = "orange"),
+                    name = "Length Category") +
+  labs(title = "Striper Length Distribution",
+       x = "Length (in)", 
+       y = "Count") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA),
+    legend.title = element_text(face = "bold"),
+    legend.position = "top"  # You can change to "right", "bottom", "left", or c(x,y) for custom position
+  )
+
+print(Striper_Histogram)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/striper_Histogram.png", 
+       Striper_Histogram, width = 10, height = 6, dpi = 300)
+  
+Striper_Length_Barchart <- ggplot(Striper_clean %>% filter(!is.na(factor(year))), aes(x = factor(year), y = length)) +
+   geom_boxplot(fill = "#2c7fb8", color = "#253494", alpha = 0.8, outlier.color = "#e34a33") +
+   xlab("Year") +
+   ylab("Length (in)") +
+   ggtitle("Striper Length by Year") +
+   theme_minimal(base_size = 13) +
+   theme(
+     plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+     axis.title = element_text(face = "bold"),
+     axis.text.x = element_text(size = 11),
+     panel.grid.major.x = element_blank(),
+     panel.grid.minor = element_blank(),
+     plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+   )
+
+print(Striper_Length_Barchart)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Striper_Length_Barchart.png", 
+       Striper_Length_Barchart, width = 10, height = 6, dpi = 300)
+
+  
+# Chapter 1: Core Analyses
+#Univariate Models:
+
+#method viz
+table(Striper_clean$method)
+table(Striper_clean$method_grouped)
+
+method_plot <- ggplot(Striper_clean, aes(x = method_grouped, y = length)) +
+  geom_boxplot(fill = "#2c7fb8", color = "#253494", alpha = 0.8, outlier.color = "#e34a33") +
+  xlab("Fishing Method") +
+  ylab("Length (in)") +
+  ggtitle("Striper Length by Fishing Method") +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+
+print(method_plot)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/striper_length_by_method.png", 
+       method_plot, width = 10, height = 6, dpi = 300)
+
+cat("\nPlot saved to Desktop/Data Analysis folder\n")
+
+#Lures:
+lure_2025_summary <- Striper_clean %>%
+  filter(year == 2025) %>%
+  count(method_grouped, season, lure_name, lure_length) %>%
+  arrange(method_grouped, season, desc(n))
+  
+print(lure_2025_summary, n = Inf)
+
+lure_2025_summary_noszn <- Striper_clean %>%
+  filter(year == 2025) %>%
+  count(lure_name, season) %>%
+  arrange(desc(n))
+  
+print(lure_2025_summary_noszn, n = Inf)
+
+# First, find the top 5 lures by total frequency
+top_5_lures <- Striper_clean %>%
+  filter(year == 2025, !is.na(lure_name)) %>%  # Remove NA lures
+  count(lure_name) %>%
+  arrange(desc(n)) %>%
+  slice(1:5) %>%
+  pull(lure_name)
+
+print(top_5_lures)
+
+lure_season_data <- Striper_clean %>%
+  filter(year == 2025, lure_name %in% top_5_lures) %>%
+  count(lure_name, season, method_grouped) %>%
+  arrange(lure_name, season, method_grouped)
+
+print(lure_season_data)
+
+install.packages("patchwork")
+library(patchwork)  # For combining plots
+
+#lures
+library(patchwork)
+
+# Plot 1: Just the tube (HORIZONTAL bars to match)
+tube_plot <- lure_season_data %>%
+  filter(lure_name == "Butchie Built Custom Tackle Red Tube") %>%
+  ggplot(aes(x = reorder(lure_name, n, sum), y = n, fill = season)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(breaks = function(x) seq(0, max(x), by = 3)) +
+  facet_wrap(~ method_grouped) +
+  scale_fill_manual(values = c("Winter" = "#C77CFF",
+                                "Spring" = "#7CAE00", 
+                                "Summer" = "#00BFC4",
+                                "Fall" = "#F8766D")) +
+  labs(title = "Red Tube: The Clear Winner",
+       subtitle = "33 total uses",
+       x = NULL,
+       y = "Number of Uses",
+       fill = "Season") +  # Add this!
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"),
+        strip.text = element_text(face = "bold"),
+        strip.background = element_rect(fill = "white", color = "black"))
+
+# Plot 2: The rest (already horizontal)
+other_plot <- lure_season_data %>%
+  filter(lure_name != "Butchie Built Custom Tackle Red Tube") %>%
+  ggplot(aes(x = reorder(lure_name, n, sum), y = n, fill = season)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~ method_grouped, scales = "free_x") +
+  scale_y_continuous(breaks = function(x) seq(0, max(x), by = 1)) +
+  scale_fill_manual(values = c("Winter" = "#C77CFF",
+                                "Spring" = "#7CAE00", 
+                                "Summer" = "#00BFC4",
+                                "Fall" = "#F8766D")) +
+  labs(title = "Other Top Lures",
+       x = NULL,
+       y = "Number of Uses",
+       fill = "Season") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"),
+        strip.text = element_text(face = "bold"),
+        strip.background = element_rect(fill = "white", color = "black"))
+
+# Combine side-by-side
+combined_plot <- tube_plot / other_plot + 
+  plot_layout(widths = c(1, 2)) +
+  plot_annotation(title = "Top 5 Lures in 2025",
+                  theme = theme(plot.title = element_text(face = "bold", size = 21, hjust = 0.5)))
+
+print(combined_plot)
+ggsave(
+  "/Users/georgelepska/Desktop/Data Analysis Docs/top5_lures_2025.png",
+  combined_plot,
+  width = 14, height = 8, dpi = 300
+)
+
+#new graph
+library(patchwork)
+
+# Softer colors
+season_colors <- c(
+  "Winter" = "#B19CD9",
+  "Spring" = "#88B04B",
+  "Summer" = "#5DADE2",
+  "Fall" = "#E74C3C"
+)
+
+# Plot 1: tube plot with LARGER fonts
+tube_plot <- lure_season_data %>%
+  filter(lure_name == "Butchie Built Custom Tackle Red Tube") %>%
+  ggplot(aes(x = season, y = n, fill = season)) +
+  geom_col(width = 0.7, alpha = 0.85) +
+  coord_flip() +
+  facet_wrap(~ method_grouped) +
+  scale_y_continuous(breaks = seq(0, 30, by = 5)) +
+  scale_fill_manual(values = season_colors) +
+  labs(title = "Red Tube: The Clear Winner",
+       subtitle = "33 total uses",
+       x = NULL,
+       y = "Number of Uses",
+       fill = "Season") +
+  theme_minimal(base_size = 20) +  # Changed from 11 to 14
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold", size = 20),  # Larger title
+        plot.subtitle = element_text(size = 20),  # Larger subtitle
+        strip.text = element_text(face = "bold", size = 20),  # Larger facet labels
+        strip.background = element_rect(fill = "white", color = "gray60"),
+        axis.text = element_text(size = 20))  # Larger axis text
+
+# Plot 2: other lures with LARGER fonts
+other_plot <- lure_season_data %>%
+  filter(lure_name != "Butchie Built Custom Tackle Red Tube") %>%
+  ggplot(aes(x = reorder(lure_name, n, sum), y = n, fill = season)) +
+  geom_col(alpha = 0.85) +
+  coord_flip() +
+  facet_wrap(~ method_grouped, scales = "free_x") +
+  scale_y_continuous(breaks = function(x) seq(0, max(x), by = 1)) +
+  scale_fill_manual(values = season_colors) +
+  labs(title = "Other Top Lures",
+       x = NULL,
+       y = "Number of Uses",
+       fill = "Season") +
+  theme_minimal(base_size = 20) +  # Changed from 11 to 14
+  theme(plot.title = element_text(face = "bold", size = 20),  # Larger title
+        strip.text = element_text(face = "bold", size = 20),  # Larger facet labels
+        strip.background = element_rect(fill = "white", color = "gray60"),
+        axis.text = element_text(size = 20),  # Larger axis text
+        legend.text = element_text(size = 20),  # Larger legend text
+        legend.title = element_text(size = 2, face = "bold"))  # Larger legend title
+
+# Combine
+combined_plot <- tube_plot / other_plot + 
+  plot_layout(heights = c(1, 2.5)) +
+  plot_annotation(
+    title = "Top 5 Lures in 2025",
+    theme = theme(plot.title = element_text(face = "bold", size = 27, hjust = 0.5))  # Larger main title
+  )
+
+print(combined_plot)
+
+ggsave(
+  "/Users/georgelepska/Desktop/Data Analysis Docs/top5_lures_2025_new.png",
+  combined_plot,
+  width = 12, height = 12, dpi = 300
+)
+#new graph
+#Time
+Striper_Time_Barchart <- ggplot(Striper_clean %>% filter(!is.na(time_period)), aes(x = time_period, y = length)) +
+  geom_boxplot(fill = "#2c7fb8", color = "#253494", alpha = 0.8, outlier.color = "#e34a33") +       
+  geom_smooth(method = "loess") +  
+  xlab("Time of Day") +
+  ylab("Length (in)") +
+  ggtitle("Striper Length by Time of Day") +
+    theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+print(Striper_Time_Barchart)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Striper_Time_Barchart.png", 
+       Striper_Time_Barchart, width = 10, height = 6, dpi = 300)
+
+Striper_Time_Scatterplot <- ggplot(Striper_clean %>% filter(!is.na(time_hour) & !is.na(season)), aes(x = time_hour, y = length)) +
+  geom_jitter(aes(color = season), alpha = 0.6) +  
+  geom_smooth(method = "loess", color = "blue", linewidth = 1.2) +
+  xlab("Time (Hour)") +
+  ylab("Length (in)") +
+  ggtitle("Striper Length by Time") +
+  scale_x_continuous(breaks = seq(0, 24, by = 2)) + 
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA),
+    legend.position = "right"
+  )
+print(Striper_Time_Scatterplot)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Striper_Time_Scatterplot.png", 
+       Striper_Time_Scatterplot, width = 10, height = 6, dpi = 300)
+
+#Air Temp
+Striper_Air_Scatterplot <- ggplot(Striper_clean %>% filter(!is.na(air_temp) & !is.na(season)), aes(x = air_temp, y = length)) +
+  geom_jitter(aes(color = season), alpha = 0.6) +  
+  geom_smooth(method = "loess", color = "blue", linewidth = 1.2) +
+  xlab("Air Temp (°F)") +
+  ylab("Lentgh (in)") +
+  ggtitle("Total Striper Length by Air Temperature") +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+print(Striper_Air_Scatterplot)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Striper_Air_Scatterplot.png", 
+       Striper_Air_Scatterplot, width = 10, height = 6, dpi = 300)
+
+#water Temp
+Striper_Water_Scatterplot <- ggplot(Striper_clean %>% filter(!is.na(water_temp) & !is.na(season)), aes(x = water_temp, y = length)) +
+  geom_jitter(aes(color = season), alpha = 0.6) +  
+  geom_smooth(method = "loess", color = "blue", linewidth = 1.2) +
+  xlab("Water Temp (°F)") +
+  ylab("Lentgh (in)") +
+  ggtitle("Striper Length by Water Temperature") +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+print(Striper_Water_Scatterplot)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Striper_Water_Scatterplot.png", 
+       Striper_Water_Scatterplot, width = 10, height = 6, dpi = 300)
+
+#Day/Season
+Striper_Length_Season <- ggplot(Striper_clean %>% filter(!is.na(water_temp) & !is.na(season)), aes(x = doy, y = length)) +
+  geom_jitter(aes(color = season), alpha = 0.6, width = 2) +
+  geom_smooth(
+    method = "gam",
+    formula = y ~ s(x, bs = "cc"),
+    se = FALSE,
+    color = "blue"
+  ) +
+  scale_x_continuous(
+    breaks = c(1, 60, 121, 182, 244, 305, 366),
+    labels = c("Jan", "Mar", "May", "Jul", "Sep", "Nov", "Dec")
+  ) +
+  labs(
+    x = "Day of Year",
+    y = "Striper Length (in)",
+    title = "Striper Length by Day of Year (Seasonal Trend)"
+  ) +
+   theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+print(Striper_Length_Season)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Striper_Length_Season.png", 
+       Striper_Length_Season, width = 10, height = 6, dpi = 300)
+
+#Weather Type
+table(Striper_clean$weather)
+table(Striper_clean$weather_grouped)
+
+Striper_Weather_Type <- ggplot(Striper_clean %>% filter(!is.na(water_temp) & !is.na(season)), aes(x = weather_grouped, y = length)) +
+  geom_boxplot(fill = "#2c7fb8", color = "#253494", alpha = 0.8, outlier.color = "#e34a33") +
+  xlab("Weather") +
+  ylab("Length (in)") +
+  ggtitle("Total Striper Length by Weather Type")+
+     theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+print(Striper_Weather_Type)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Striper_Weather_Type.png", 
+       Striper_Weather_Type, width = 10, height = 6, dpi = 300)
+
+#Wind Speed
+table(Striper_clean$wind_direction)
+table(Striper_clean$wind_cardinal)
+summary(Striper_clean$wind_speed_knots)
+
+Wind_Scatterplot <- ggplot(Striper_clean %>% filter(!is.na(wind_cardinal)), aes(x = wind_speed_knots, y = length)) +
+  geom_jitter(aes(color = wind_cardinal), alpha = 0.6) +  
+  geom_smooth(method = "loess") +  
+  xlab("wind speed (knots)") +
+  ylab("Length (in)") +
+  ggtitle("Striper Length vs Wind Speed")+
+       theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+print(Wind_Scatterplot)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Wind_Scatterplot.png", 
+       Wind_Scatterplot, width = 10, height = 6, dpi = 300)
+
+#Wind Direction
+ggplot(Striper_clean, aes(x = wind_direction, y = length)) +
+  geom_boxplot(fill = "red") +
+  xlab("Weather") +
+  ylab("Weight (lb)") +
+  ggtitle("Total Striper Weight by Wind Direction")
+
+
+Wind_Barchart <- ggplot(Striper_clean %>% filter(!is.na(wind_cardinal)), aes(x = wind_cardinal, y = length)) +
+  geom_boxplot(fill = "#2c7fb8", color = "#253494", alpha = 0.8, outlier.color = "#e34a33") +
+  xlab("Wind Direction") +
+  ylab("Length (in)") +
+  ggtitle("Striper Length by Wind Direction")+theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+print(Wind_Barchart)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Wind_Barchart.png", 
+       Wind_Barchart, width = 10, height = 6, dpi = 300)
+
+
+#Moon Phase
+table(Striper_clean$moon_phase)
+
+Moon_Chart <- ggplot(Striper_clean %>% filter(!is.na(wind_cardinal)), aes(x = moon_phase, y = length)) +
+  geom_boxplot(fill = "#2c7fb8", color = "#253494", alpha = 0.8, outlier.color = "#e34a33") +
+  xlab("Moon Phase") +
+  ylab("Length (in)") +
+  ggtitle("Total Striper Length by Moon Phase")+
+         theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+print(Moon_Chart)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Moon_Chart.png", 
+       Moon_Chart, width = 10, height = 6, dpi = 300)
+
+#Barometric Pressure
+summary(Striper_clean$pressure)
+
+Pressure_Graph <- ggplot(Striper_clean, aes(x = pressure, y = length)) +
+  geom_jitter(aes(color = wind_cardinal), alpha = 0.6) +          # points, semi-transparent
+  geom_smooth(method = "loess") +
+  xlab("Barometric Pressure (hPa)") +
+  ylab("Length (in)") +
+  ggtitle("Striper Length by Barometric Pressure") +
+           theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+print(Pressure_Graph)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/Pressure_Graph.png", 
+       Pressure_Graph, width = 10, height = 6, dpi = 300)
+
+#Chapter 1: remove missing values
+
+Striper_clean <- Striper_clean %>%
+  mutate(success = if_else(length >= quantile(length, 0.75, na.rm = TRUE), 1, 0)) %>%
+  filter(!is.na(success) & 
+         !is.na(water_temp) & 
+         !is.na(wind_speed_knots) & 
+         !is.na(time_period) & 
+         !is.na(method_grouped) &
+         !is.na(method) &
+         !is.na(weather_grouped) &
+         !is.na(moon_phase) & 
+         !is.na(pressure) & 
+         !is.na(wind_cardinal))
+Striper_clean <- Striper_clean %>%
+  filter(!is.na(length))
+
+cat("Success distribution:\n")
+print(table(Striper_clean$success))
+cat("\nPercentages:\n")
+print(prop.table(table(Striper_clean$success)) * 100)
+
+#Chapter 2: train data
+set.seed(123)  
+trainIndex <- createDataPartition(Striper_clean$success, p = 0.8, list = FALSE)
+train_data <- Striper_clean[trainIndex, ]
+test_data <- Striper_clean[-trainIndex, ]
+
+#check balance of data
+cat("\n=== Data Split ===\n")
+cat("Training set:", nrow(train_data), "fish\n")
+cat("Test set:", nrow(test_data), "fish\n")
+
+#Chapter 3: Intricate tresting
+
+# Start with a MINIMAL baseline model (just the strongest predictors)
+baseline_model <- glm(
+  success ~ water_temp + method_grouped,
+  family = binomial,
+  data = train_data
+)
+
+# Test adding each variable ONE AT A TIME
+cat("=== TESTING EACH VARIABLE ===\n\n")
+
+# Function to test a variable
+test_variable <- function(base_model, new_formula, var_name, train_data) {
+  new_model <- glm(new_formula, family = binomial, data = train_data)
+  anova_result <- anova(base_model, new_model, test = "Chisq")
+  p_value <- anova_result$`Pr(>Chi)`[2]
+  
+  cat(var_name, ":\n")
+  cat("  P-value:", round(p_value, 4))
+  
+  if(p_value < 0.05) {
+    cat(" *** STRONG evidence - INCLUDE\n")
+    return("Include")
+  } else if(p_value < 0.10) {
+    cat(" * Marginal evidence - CONSIDER\n")
+    return("Consider")
+  } else {
+    cat(" - No evidence - EXCLUDE\n")
+    return("Exclude")
+  }
+}
+
+# Test each variable
+results <- data.frame(
+  Variable = character(),
+  P_Value = numeric(),
+  Decision = character(),
+  stringsAsFactors = FALSE
+)
+
+# Test wind_speed_knots
+decision <- test_variable(
+  baseline_model,
+  success ~ water_temp + method_grouped + wind_speed_knots,
+  "Wind Speed",
+  train_data
+)
+p_val <- anova(
+  baseline_model, 
+  glm(success ~ water_temp + method_grouped + wind_speed_knots, 
+      family = binomial, 
+      data = train_data), 
+  test = "Chisq"
+)$`Pr(>Chi)`[2]
+results <- rbind(results, data.frame(
+  Variable = "Wind Speed", 
+  P_Value = p_val, 
+  Decision = decision
+))
+
+# Test time_period
+cat("\n")
+decision <- test_variable(
+  baseline_model,
+  success ~ water_temp + method_grouped + time_period,
+  "Time of Day",
+  train_data
+)
+p_val <- anova(
+  baseline_model, 
+  glm(success ~ water_temp + method_grouped + time_period, 
+      family = binomial, 
+      data = train_data), 
+  test = "Chisq"
+)$`Pr(>Chi)`[2]
+results <- rbind(results, data.frame(
+  Variable = "Time of Day", 
+  P_Value = p_val, 
+  Decision = decision
+))
+
+# Test weather_grouped
+cat("\n")
+decision <- test_variable(
+  baseline_model,
+  success ~ water_temp + method_grouped + weather_grouped,
+  "Weather",
+  train_data
+)
+p_val <- anova(
+  baseline_model, 
+  glm(success ~ water_temp + method_grouped + weather_grouped, 
+      family = binomial, 
+      data = train_data), 
+  test = "Chisq"
+)$`Pr(>Chi)`[2]
+results <- rbind(results, data.frame(
+  Variable = "Weather", 
+  P_Value = p_val, 
+  Decision = decision
+))
+
+# Test pressure
+cat("\n")
+decision <- test_variable(
+  baseline_model,
+  success ~ water_temp + method_grouped + pressure,
+  "Barometric Pressure",
+  train_data
+)
+p_val <- anova(
+  baseline_model, 
+  glm(success ~ water_temp + method_grouped + pressure, 
+      family = binomial, 
+      data = train_data), 
+  test = "Chisq"
+)$`Pr(>Chi)`[2]
+results <- rbind(results, data.frame(
+  Variable = "Barometric Pressure", 
+  P_Value = p_val, 
+  Decision = decision
+))
+
+# Test moon_phase
+cat("\n")
+decision <- test_variable(
+  baseline_model,
+  success ~ water_temp + method_grouped + moon_phase,
+  "Moon Phase",
+  train_data
+)
+p_val <- anova(
+  baseline_model, 
+  glm(success ~ water_temp + method_grouped + moon_phase, 
+      family = binomial, 
+      data = train_data), 
+  test = "Chisq"
+)$`Pr(>Chi)`[2]
+results <- rbind(results, data.frame(
+  Variable = "Moon Phase", 
+  P_Value = p_val, 
+  Decision = decision
+))
+
+# Test wind_cardinal
+cat("\n")
+decision <- test_variable(
+  baseline_model,
+  success ~ water_temp + method_grouped + wind_cardinal,
+  "Wind Direction",
+  train_data
+)
+p_val <- anova(
+  baseline_model, 
+  glm(success ~ water_temp + method_grouped + wind_cardinal, 
+      family = binomial, 
+      data = train_data), 
+  test = "Chisq"
+)$`Pr(>Chi)`[2]
+results <- rbind(results, data.frame(
+  Variable = "Wind Direction", 
+  P_Value = p_val, 
+  Decision = decision
+))
+
+# Summary table
+cat("\n\n=== SUMMARY TABLE ===\n")
+results <- results %>% arrange(P_Value)
+print(results)
+
+# Final recommendation
+cat("\n=== RECOMMENDED VARIABLES ===\n")
+include_vars <- results %>% filter(Decision == "Include")
+consider_vars <- results %>% filter(Decision == "Consider")
+
+cat("Definitely include:\n")
+print(include_vars$Variable)
+
+cat("\nConsider including:\n")
+print(consider_vars$Variable)
+  
+#Follow up of intricate test
+library(pROC)
+library(dplyr)
+
+# Model 1: Simple (2 variables)
+model_simple <- glm(
+  success ~ water_temp + method_grouped,
+  family = binomial,
+  data = train_data
+)
+
+# Model 2: Simple + weather (3 variables)
+model_2 <- glm(
+  success ~ water_temp + method_grouped + weather_grouped,
+  family = binomial,
+  data = train_data
+)
+
+# Model 3: Model 2 + time_period (4 variables)
+model_3 <- glm(
+  success ~ water_temp + method_grouped + weather_grouped + time_period,
+  family = binomial,
+  data = train_data
+)
+
+# Model 4: Model 3 + wind_speed_knots (5 variables)
+model_4 <- glm(
+  success ~ water_temp + method_grouped + weather_grouped + 
+            time_period + wind_speed_knots,
+  family = binomial,
+  data = train_data
+)
+
+# Model 5: Model 4 + wind_cardinal (6 variables)
+model_5 <- glm(
+  success ~ water_temp + method_grouped + weather_grouped + 
+            time_period + wind_speed_knots + wind_cardinal,
+  family = binomial,
+  data = train_data
+)
+
+
+# Calculate AUCs
+auc_1 <- auc(roc(
+  test_data$success,
+  predict(model_simple, test_data, type = "response"),
+  quiet = TRUE
+))
+
+auc_2 <- auc(roc(
+  test_data$success,
+  predict(model_2, test_data, type = "response"),
+  quiet = TRUE
+))
+
+auc_3 <- auc(roc(
+  test_data$success,
+  predict(model_3, test_data, type = "response"),
+  quiet = TRUE
+))
+
+auc_4 <- auc(roc(
+  test_data$success,
+  predict(model_4, test_data, type = "response"),
+  quiet = TRUE
+))
+
+auc_5 <- auc(roc(
+  test_data$success,
+  predict(model_5, test_data, type = "response"),
+  quiet = TRUE
+))
+
+# Create comparison table
+comparison <- data.frame(
+  Model = c(
+    "Model 1 (2 vars)",
+    "Model 2 (3 vars)",
+    "Model 3 (4 vars)",
+    "Model 4 (5 vars)",
+    "Model 5 (6 vars)"
+  ),
+  Variables = c(
+    "water temp and method",
+    "model1 and weather",
+    "model2 and time of day",
+    "model3 and wind speed",
+    "model4 and wind direction"
+  ),
+  AUC = c(
+    auc_1,
+    auc_2,
+    auc_3,
+    auc_4,
+    auc_5
+  ),
+  Num_Params = c(
+    length(coef(model_simple)),
+    length(coef(model_2)),
+    length(coef(model_3)),
+    length(coef(model_4)),
+    length(coef(model_5))
+  )
+) %>%
+  mutate(AUC_rounded = round(AUC, 3))
+
+print(comparison)
+
+
+# Which is best?
+best_model <- comparison$Model[which.max(comparison$AUC)]
+cat("\nBest AUC:", best_model, "\n")
+
+# Is the difference meaningful?
+if(max(comparison$AUC) - min(comparison$AUC) < 0.02) {
+  cat("\nAll models perform similarly (AUC difference < 0.02)\n")
+  cat("Recommend: Use the SIMPLEST model (2 variables)\n")
+}
+
+#Follow up of intricate test
+
+# ============================================
+# 4. CLEAN COEFFICIENT TABLE
+# ============================================
+
+coef_table <- tidy(model_2, conf.int = TRUE) %>%
+  mutate(
+    odds_ratio = exp(estimate),
+    odds_lower = exp(conf.low),
+    odds_upper = exp(conf.high),
+    p_value = round(p.value, 4)
+  ) %>%
+  dplyr::select(term, estimate, odds_ratio, odds_lower, odds_upper, p_value)
+
+cat("\n=== Coefficient Table with Odds Ratios ===\n")
+print(coef_table, n = Inf)
+
+install.packages("gt")
+library(gt)
+coef_table %>%
+  gt() %>%
+  gtsave("~/Desktop/Data Analysis Docs/coef_table.png")
+
+
+# Interpretation helper
+cat("\n=== Quick Interpretation Guide ===\n")
+cat("Odds Ratio > 1: Increases odds of success\n")
+cat("Odds Ratio < 1: Decreases odds of success\n")
+cat("Odds Ratio = 1: No effect\n\n")
+
+# Detailed interpretation
+cat("=== What This Means ===\n")
+water_temp_or <- coef_table$odds_ratio[coef_table$term == "water_temp"]
+trolling_or <- coef_table$odds_ratio[coef_table$term == "method_groupedtrolling"]
+weather_grouped_or <- coef_table$odds_ratio[coef_table$term == "weather_groupedovercast"]
+
+cat("Water Temperature:\n")
+cat("  • Each 1°F increase multiplies odds by", round(water_temp_or, 3), "\n")
+cat("  • Going from 60°F to 70°F multiplies odds by", 
+    round(water_temp_or^10, 2), "x\n\n")
+
+cat("Fishing Method:\n")
+cat("  • Trolling multiplies odds by", round(trolling_or, 1), 
+    "x compared to casting\n")
+cat("  • Trolling is BY FAR the most important factor!\n")
+
+cat("Fishing Method:\n")
+cat("  • overcast weather multiplies odds by", round(weather_grouped_or, 1), 
+    "x compared to clear weather\n")
+
+
+#5: See how well it works on NEW data (the test set)
+
+# Get predictions on test data
+test_data$predicted_prob <- predict(model_2, newdata = test_data, type = "response")
+test_data$predicted_class <- ifelse(test_data$predicted_prob >= 0.5, 1, 0)
+
+# Calculate accuracy
+accuracy <- mean(test_data$predicted_class == test_data$success)
+
+cat("\n=== Model Performance on Test Data ===\n")
+cat("Accuracy:", round(accuracy * 100, 1), "%\n")
+cat("(This means the model correctly predicted", round(accuracy * 100, 1), 
+    "% of fish)\n")
+
+# Confusion Matrix - shows where model was right/wrong
+conf_mat <- table(Predicted = test_data$predicted_class, 
+                  Actual = test_data$success)
+cat("\nConfusion Matrix:\n")
+print(conf_mat)
+cat("\nReading the matrix:\n")
+cat("- Top-left: Correctly predicted small fish\n")
+cat("- Bottom-right: Correctly predicted big fish\n")
+cat("- Top-right: Predicted small but was big (missed opportunity!)\n")
+cat("- Bottom-left: Predicted big but was small (false alarm)\n")
+
+
+#6 ROC score
+
+roc_obj <- roc(test_data$success, test_data$predicted_prob, quiet = TRUE)
+auc_value <- auc(roc_obj)
+
+cat("\n=== AUC Score ===\n")
+cat("AUC:", round(auc_value, 3), "\n")
+cat("Interpretation:\n")
+cat("  0.5 = Random guessing (coin flip)\n")
+cat("  0.7-0.8 = Acceptable\n")
+cat("  0.8-0.9 = Good\n")
+cat("  0.9+ = Excellent\n")
+
+roc_plot <- ggroc(roc_obj, size = 1.2) +
+  geom_abline(intercept = 1, slope = 1, linetype = "dashed", color = "red") +
+  annotate("text", x = 0.25, y = 0.25, 
+           label = paste("AUC =", round(auc_value, 3)), 
+           size = 6, fontface = "bold") +
+  labs(title = "ROC Curve: How Well Does the Model Predict Big Fish?",
+       subtitle = "Closer to top-left corner = better model",
+       x = "Specificity",
+       y = "Sensitivity") +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5))
+
+print(roc_plot)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/roc_plot.png", 
+       roc_plot, width = 10, height = 6, dpi = 300)
+cat("\nROC curve saved as 'roc_curve.png'\n")
+
+
+
+# ============================================
+# 7. VARIABLE IMPORTANCE PLOT
+# ============================================
+importance_df <- coef_table %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    abs_effect = abs(estimate),
+    significant = ifelse(p_value < 0.05, "Significant", "Not Significant"),
+    term_clean = case_when(
+      term == "water_temp" ~ "Water Temperature",
+      term == "method_groupedtrolling" ~ "Trolling Method",
+      term == "method_groupedother" ~ "Other Method",
+      term == "weather_groupedovercast" ~ "Overcast Weather",
+      term == "weather_groupedrainy" ~ "Rainy Weather",
+      TRUE ~ gsub("_", " ", term)
+    )
+  ) %>%
+  arrange(desc(abs_effect))
+
+importance_plot <- ggplot(importance_df, 
+                          aes(x = reorder(term_clean, abs_effect), 
+                              y = abs_effect, 
+                              fill = significant)) +
+  geom_col(width = 0.6) +
+  coord_flip() +
+  scale_fill_manual(values = c("Significant" = "#2E7D32", 
+                                "Not Significant" = "#BDBDBD")) +
+  labs(title = "What Matters for Catching Trophy Striped Bass?",
+       x = NULL,
+       y = "Effect Size (Absolute Value)",
+       fill = NULL) +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(hjrt = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5),
+        legend.position = "top")
+
+print(importance_plot)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/importance_plot.png", 
+       importance_plot, width = 10, height = 6, dpi = 300)
+
+# Create a better comparison
+practical_effects <- data.frame(
+  Variable = c("Water Temp\n(50°F → 75°F)", 
+               "Method\n(Casting → Trolling)",
+               "Weather\n(Clear → Overcast)"),
+  Odds_Ratio = c(12.2, 5.5, 2.2),
+  Type = c("Continuous (25° range)", "Categorical", "Categorical")
+)
+
+ggplot(practical_effects, aes(x = reorder(Variable, Odds_Ratio), 
+                               y = Odds_Ratio, 
+                               fill = Type)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = paste0(round(Odds_Ratio, 1), "×")), 
+            hjust = -0.2, size = 5, fontface = "bold") +
+  coord_flip() +
+  scale_fill_manual(values = c("Continuous (25° range)" = "#E74C3C",
+                                "Categorical" = "#3498DB")) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.5))) +
+  labs(title = "Effect Sizes: Which Variables Matter Most?",
+       subtitle = "Odds ratios across realistic ranges",
+       x = NULL,
+       y = "Odds Ratio",
+       fill = "Variable Type") +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        legend.position = "top")
+
+practical_plot <- ggplot(practical_effects, 
+                          aes(x = reorder(Variable, Odds_Ratio),
+                              y = Odds_Ratio,
+                              fill = Type)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = paste0(round(Odds_Ratio, 1), "×")),
+            hjust = -0.2, size = 5, fontface = "bold") +
+  coord_flip() +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.5))) +
+  scale_fill_manual(values = c("Continuous (25° range)" = "#E74C3C",
+                               "Categorical" = "#3498DB")) +
+  labs(title = "Effect Sizes: Which Variables Matter Most?",
+       subtitle = "Odds ratios across realistic ranges",
+       x = NULL,
+       y = "Odds Ratio",
+       fill = "Variable Type") +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        legend.position = "top")
+
+ggsave(
+  "/Users/georgelepska/Desktop/Data Analysis Docs/practical_effects2.png",
+  plot = practical_plot,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+
+# ============================================
+# 8. EXAMPLE SCENARIOS (REVISED)
+# ============================================
+
+# Create expanded scenarios with all weather types
+scenarios <- expand.grid(
+  water_temp = seq(50, 75, by = 5),
+  method_grouped = c("casting", "trolling", "other"),
+  weather_grouped = c("clear", "overcast", "rainy")
+)
+
+scenarios$probability <- predict(model_2, scenarios, type = "response")
+scenarios$percent <- paste0(round(scenarios$probability * 100, 1), "%")
+
+# Faceted visualization with significance indicators
+scenario_plot_final <- ggplot(scenarios, aes(x = water_temp, y = probability, 
+                                       color = method_grouped, 
+                                       group = method_grouped)) +
+  geom_line(size = 1.5) +
+  geom_point(size = 3) +
+  facet_wrap(~weather_grouped, labeller = labeller(weather_grouped = 
+    c("clear" = "Clear Weather", 
+      "overcast" = "Overcast Weather", 
+      "rainy" = "Rainy Weather"))) +
+  scale_color_manual(
+    values = c("casting" = "#FF6B6B", 
+               "trolling" = "#2E7D32",  # Keep bold green for significant
+               "other" = "#FFA726"),
+    labels = c("Casting", "Trolling", "Other")) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(title = "Probability of Catching Trophy Striped Bass",
+       subtitle = "Water temperature × fishing method × weather conditions",
+       x = "Water Temperature (°F)",
+       y = "Probability of Success",
+       color = "Fishing Method") +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5, size = 11),
+        legend.position = "top",
+        strip.text = element_text(face = "bold", size = 12))
+
+print(scenario_plot_final)
+ggsave("/Users/georgelepska/Desktop/Data Analysis Docs/scenario_plot_final.png", 
+       scenario_plot_final, width = 10, height = 6, dpi = 300)
+
+
+# Key insights from scenarios
+cat("\n=== Key Insights from Scenarios ===\n")
+best_scenario <- scenarios[which.max(scenarios$probability), ]
+worst_scenario <- scenarios[which.min(scenarios$probability), ]
+
+cat("BEST conditions:\n")
+cat("  •", best_scenario$water_temp, "°F with", best_scenario$method_grouped, 
+    "in", best_scenario$weather_grouped, "weather\n")
+cat("  • Probability:", best_scenario$percent, "\n\n")
+
+cat("WORST conditions:\n")
+cat("  •", worst_scenario$water_temp, "°F with", worst_scenario$method_grouped,
+    "in", worst_scenario$weather_grouped, "weather\n")
+cat("  • Probability:", worst_scenario$percent, "\n\n")
+
+cat("The difference between best and worst:", 
+    round((best_scenario$probability - worst_scenario$probability) * 100, 1), 
+    "percentage points!\n")
+
+# Weather comparison
+cat("\n=== Weather Impact ===\n")
+weather_summary <- scenarios %>%
+  group_by(weather_grouped) %>%
+  summarise(avg_prob = mean(probability)) %>%
+  arrange(desc(avg_prob))
+
+for(i in 1:nrow(weather_summary)) {
+  cat(weather_summary$weather_grouped[i], "weather:", 
+      round(weather_summary$avg_prob[i] * 100, 1), "%\n")
+}
+
+# Significance note
+cat("\n=== Statistical Significance Note ===\n")
+cat("* Indicates statistically significant predictors (p < 0.05)\n")
+cat("Significant variables: Water Temperature, Trolling, Overcast Weather\n")
+cat("These are the factors with the strongest evidence of real effects.\n")
