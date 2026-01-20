@@ -5,6 +5,11 @@ My name is George Lepska. I graduated from Wesleyan University in May of 2025. D
 
 # PROJECTS:
 
+# Predicting Trophy Striped Bass: Evidenc from 5 years of an Expert Fisherman's Data
+Link to blog post:
+Code:
+Data:
+
 # The Effect of Jumpscares on Word Search Performance
 
 Code: [Jumpscarfe Word Search Project.R](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Final%20Proj%20Lepska.R)
