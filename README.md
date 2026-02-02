@@ -1,4 +1,4 @@
-## GEORGE_LEPSKA_PORTFOLIO
+### GEORGE LEPSKA'S PORTFOLIO
 
 # ABOUT:
 My name is George Lepska. I graduated from Wesleyan University in May of 2025. During my time at Wesleyan, I majored in Economics and minored in data analysis and art history. At Wesleyan, I grew a strong analytical background and developed a passion for data analysis. I am excited to bring my skills to the field as a business analyst.
@@ -7,11 +7,13 @@ My name is George Lepska. I graduated from Wesleyan University in May of 2025. D
 
 # Predicting Trophy Striped Bass Conditions
 
-Link to blog post: https://glepska-pjtwf.wordpress.com/2026/01/15/hello-world/?preview_id=3&preview_nonce=a80dfe1f5a&preview=true
+Description: In this project, I built a logistic regression model using 8 environmental variables (water temperature, weather patterns, seasonal trends) by analyzing 5 years of striped bass catch data from January 2021 to December 2025. The model achieved 0.786 AUC through systematic variable selection and train/test validation, and features ROC curves, variable importance plots, coefficient tables, and prediction scenarios to present findings.
 
-Data: https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/STRIPED%20BASS%20DATA.xlsx 
+Link to blog post: [Link to blog post](https://georgelepska.github.io/2026/01/20/fishing-data-analysis/)
 
-Code: https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Striped%20Bass%20Data%20Analysis%20Final%20Project.Rmd
+[Data](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/STRIPED%20BASS%20DATA.xlsx) 
+
+[Code](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Striped%20Bass%20Data%20Analysis%20Final%20Project.Rmd)
 
 # The Effect of Jumpscares on Word Search Performance
 
