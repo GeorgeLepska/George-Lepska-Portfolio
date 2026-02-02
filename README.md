@@ -7,7 +7,9 @@ My name is George Lepska. I graduated from Wesleyan University in May of 2025. D
 
 # Predicting Trophy Striped Bass Conditions
 
-Description: In this project, I built a logistic regression model using 8 environmental variables (water temperature, weather patterns, seasonal trends) by analyzing 5 years of striped bass catch data from January 2021 to December 2025. The model achieved 0.786 AUC through systematic variable selection and train/test validation, and features ROC curves, variable importance plots, coefficient tables, and prediction scenarios to present findings.
+Description: In this project, I built a logistic regression model in R using 8 environmental variables (water temperature, weather patterns, seasonal trends) by analyzing 5 years of striped bass catch data from January 2021 to December 2025. The model achieved 0.786 AUC through systematic variable selection and train/test validation, and features ROC curves, variable importance plots, coefficient tables, and prediction scenarios to present findings.
+
+Skills: Statistical Modelling (Logistic Regression, Likeliehood Ratio Tests, AUC analysis, Odds Rations), Data Visualization (Histograms, Box Plots, Scatterplots, ROC curves, Scenario Charts), Environmental Data analysis (Weather Patterns, Water Temperature, Seasonal Variation, Atmospheric Pressure), Machine Learning (Binary Classification, Train/test Split, Model Selection, Performance Metrics)
 
 [Link to blog post](https://georgelepska.github.io/2026/01/20/fishing-data-analysis/)
 
