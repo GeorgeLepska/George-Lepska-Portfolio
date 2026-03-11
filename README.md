@@ -17,6 +17,18 @@ Skills: Statistical Modelling (Logistic Regression, Likeliehood Ratio Tests, AUC
 
 [Code](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Striped%20Bass%20Data%20Analysis%20Final%20Project.Rmd)
 
+# New England Ski Resort Daily Ranker (SkiRank)
+
+Description: A Python CLI tool that pulls live forecast data from 39 New england Ski resorts, and ranks the current conditions using a weighted scoring algorithm. SkiRank pulls live weather forecast data from the National Weather Service API across ski resorts in CT, MA, NH, ME, and VT, and ranks each resort on an 100 point scale. Scoring algoritmhm is based on wind, preceipitation, and temeprature.
+
+Installation: Requires Python 3.8+, requests, and rich
+
+Instructions: Load in the request and rich packages, run the code, enter the resort name or rank number for a detailed forecast and press q to quit.
+
+Skills: API intergration, Data wrangling, Algoritmnic design, CLI developpment, Data Visualization
+
+[Code](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/Striped%20Bass%20Data%20Analysis%20Final%20Project.Rmd)
+
 # The Effect of Jumpscares on Word Search Performance
 
 Description: For this project, I tested 30 of my peers to test if getting jumpscared increases the amount of words found on a wordsearch. 
