@@ -21,11 +21,11 @@ Skills: Statistical Modelling (Logistic Regression, Likeliehood Ratio Tests, AUC
 
 Description: A Python CLI tool that pulls live forecast data from 39 New england Ski resorts, and ranks the current conditions using a weighted scoring algorithm. SkiRank pulls live weather forecast data from the National Weather Service API across ski resorts in CT, MA, NH, ME, and VT, and ranks each resort on an 100 point scale. The scoring algoritmhm is based on wind, preceipitation, and temeprature.
 
-Installation: Requires Python 3.8+, requests, and rich
+Installation: Requires Python 3.8+, requests, and rich.
 
-Instructions: Load in the request and rich packages, run the code, enter the resort name or rank number for a detailed forecast, and press q to quit.
+Instructions: Load in the request and rich packages, run the code, enter the resort name or rank number in the terminal for a detailed forecast, and enter q in the terminal to quit.
 
-Skills: API intergration, Data wrangling, Algoritmnic design, CLI developpment, Data Visualization
+Skills: API intergration, Data wrangling, Algoritmnic design, CLI developpment, Data Visualization.
 
 [Code](https://github.com/GeorgeLepska/George-Lepska-Portfolio/blob/main/New%20England%20Ski%20Resort%20Ranker.py)
 
