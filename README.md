@@ -19,7 +19,7 @@ Skills: Statistical Modelling (Logistic Regression, Likeliehood Ratio Tests, AUC
 
 # New England Ski Resort Daily Ranker (SkiRank)
 
-Description: A Python CLI tool that pulls live forecast data from 39 New england Ski resorts, and ranks the current conditions using a weighted scoring algorithm. SkiRank pulls live weather forecast data from the National Weather Service API across ski resorts in CT, MA, NH, ME, and VT, and ranks each resort on an 100 point scale. The scoring algoritmhm is based on wind, preceipitation, and temeprature.
+Description: A Python CLI tool that pulls live forecast data from 39 New england Ski resorts, and ranks the current conditions using a weighted scoring algorithm. SkiRank pulls live weather forecast data from the National Weather Service API across ski resorts in CT, MA, NH, ME, and VT, and ranks each resort on an 100 point scale. The scoring algorithm is based on wind, precipitation, and temperature.
 
 Installation: Requires Python 3.8+, requests, and rich.
 
